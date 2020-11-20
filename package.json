@@ -1,0 +1,23 @@
+{
+  "name": "bookstore",
+  "version": "1.0.0",
+  "description": "CSE 412 Group Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevin-shannon/bookstore.git"
+  },
+  "author": "Kevin Shannon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kevin-shannon/bookstore/issues"
+  },
+  "homepage": "https://github.com/kevin-shannon/bookstore#readme",
+  "dependencies": {
+    "pg": "^8.4.1"
+  }
+}

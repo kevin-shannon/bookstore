@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/kevin-shannon/bookstore#readme",
   "dependencies": {
-    "pg": "^8.4.1"
+    "express": "^4.17.1",
+    "pg": "^8.4.1",
+    "pg-promise": "^10.8.0",
+    "pug": "^3.0.0"
   }
 }

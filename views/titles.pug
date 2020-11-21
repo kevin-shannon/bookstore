@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 #{title}
+  table
+    tr
+      th Title
+      th Rating
+      th Price
+    each title, i in titles
+      tr
+        td= title.name
+        td= title.rating
+        td= title.price

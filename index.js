@@ -1,34 +1,51 @@
-const pg = require('pg');
-const pool = new pg.Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'bookstore',
-  password: '412',
-  port: '5432'
-});
+const express = require('express');
+const path = require('path');
 
+// Init App
+const app = express()
+const port = 3000
+var db = require('./queries.js')
 
-const http = require('http');
+// Load View Engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
 
-http.createServer((request, response) => {
-  const { headers, method, url } = request;
-  let body = [];
-  request.on('error', (err) => {
-    console.error(err);
-  }).on('data', (chunk) => {
-    body.push(chunk);
-  }).on('end', () => {
-    body = Buffer.concat(body).toString();
+// Home Route
+app.get('/', (req, res) => {
+  res.render('index', {
+    title:'Home',
+  })
+})
 
-    response.on('error', (err) => {
-      console.error(err);
-    });
-
-    response.writeHead(200, {'Content-Type': 'application/json'})
-
-    pool.query("SELECT * FROM Book", (err, res) => {
-      console.log(err, res);
-      response.end(JSON.stringify(res['rows']))
-    });
+// Add Routes
+app.get('/books', function(req, res) {
+  db.getAllBooks.then((data) => {
+    res.render('books', {
+      title:'Books',
+      books: data
+    })
   });
-}).listen(8080);
+})
+
+app.get('/titles', function(req, res) {
+  db.getAvailableTitles.then((data) => {
+    res.render('titles', {
+      title:'Titles',
+      titles: data
+    })
+  });
+})
+
+app.get('/vendors', function(req, res) {
+  db.getAllVendors.then((data) => {
+    res.render('vendors', {
+      title:'Vendors',
+      vendors: data
+    })
+  });
+})
+
+// Start Server
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`)
+})

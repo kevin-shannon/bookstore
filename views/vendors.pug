@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1 #{title}
+  table
+    tr
+      th vendor_id
+      th name
+      th url
+      th address
+    each vendor, i in vendors
+      tr
+        td= vendor.vendor_id
+        td= vendor.name
+        td: a(href=vendor.url) #{vendor.url}
+        td= vendor.address

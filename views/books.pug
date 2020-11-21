@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1 #{title}
+  table
+    tr
+      th book_id
+      th name
+      th ISBN
+      th vendor_name
+      th author_name
+      th username
+    each book, i in books
+      tr
+        td= book.book_id
+        td= book.name
+        td= book.isbn
+        td= book.vendor_name
+        td= book.author_name
+        td= book.username

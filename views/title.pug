@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  h1 #{title.name}
+  h3 Title Info
+  ul
+    li= 'isbn: ' + title.isbn
+    li= 'rating: ' + title.rating + '/100'
+    li= 'published: ' + title.published_date
+  
+  h3 Sellers
+  table
+    tr
+      th book_id
+      th condition
+      th published_by
+      th vendor
+    each seller, i in sellers
+      tr
+        td= seller.book_id
+        td= seller.condition
+        td= seller.published_by
+        td: a(href='/vendors/'+seller.vendor_id + loginInfo) #{seller.vendor}
+        if username
+          td
+            form(action='/cart/add' method='POST')
+              input(type='hidden' name='book_id' value=seller.book_id)
+              input(type='hidden' name='username' value=username)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Add to Cart!

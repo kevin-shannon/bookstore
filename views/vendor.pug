@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  h1 #{vendor.name}
+  h3 Vendor Info
+  ul
+    li= 'vendor_id: ' + vendor.vendor_id
+    li= 'name: ' + vendor.name
+    li url: 
+      a(href=vendor.url) #{vendor.url}
+    li= 'address: ' + vendor.address

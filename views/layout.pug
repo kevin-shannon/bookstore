@@ -3,7 +3,15 @@ html
   head
     title Book Store
   body
-    a(href='/') Home
+    a(href='/' + loginInfo) Home
+    br
+    if username
+      div Welcome #{username}
+      a(href='/cart' + loginInfo) Cart
+      br
+      a(href=path) Logout
+    else if path != '/login'
+      a(href='/login' + loginInfo) Login
     block content
     br
     hr

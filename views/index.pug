@@ -3,6 +3,6 @@ extends layout
 block content
   h1 #{title}
   ul
-    li: a(href='/books') Books
-    li: a(href='/titles') Titles
-    li: a(href='/vendors') Vendors
+    li: a(href='/books' + loginInfo) Books
+    li: a(href='/titles' + loginInfo) Titles
+    li: a(href='/vendors' + loginInfo) Vendors

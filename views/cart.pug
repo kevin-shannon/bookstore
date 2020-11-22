@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1 My Cart
+  h3 Items in Cart: #{numItems.count}
+  table
+    tr
+      th book_id
+      th title
+      th price
+      th vendor
+    each item, i in cart
+      tr
+        td= item.book_id
+        td= item.name
+        td= item.price
+        td: a(href='/vendors/'+item.vendor_id + loginInfo) #{item.vendor}
+        td
+          form(action='/cart/remove' method='POST')
+            input(type='hidden' name='book_id' value=item.book_id)
+            input(type='hidden' name='username' value=username)
+            input(type='hidden' name='loginInfo' value=loginInfo)
+            button Remove
+  h3 Total Price: #{totalPrice.sum}
+     

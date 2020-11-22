@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  if success
+    h3 successfully logged in!
+  else
+    h1 Login
+    form
+      input(type='text' name='username' placeholder='username')
+      input(type='password' name='password' placeholder='Password')
+      input(type='submit' value='Login')

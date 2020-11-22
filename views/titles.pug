@@ -9,6 +9,6 @@ block content
       th Price
     each title, i in titles
       tr
-        td= title.name
+        td: a(href='/titles/' + title.isbn + loginInfo) #{title.name}
         td= title.rating
         td= title.price

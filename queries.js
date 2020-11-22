@@ -36,6 +36,8 @@ const getSellers = (isbn) =>
 
 const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1', vendor_id);
 
+const getCustomer = (username) => db.one('SELECT * FROM customer WHERE username = $1', username);
+
 const checkValidCustomer = (username, password) => db.one('SELECT * FROM customer WHERE username = $1 AND password = $2', [username, password]);
 
 const checkValidAdmin = (username, password) => db.one('SELECT * FROM admin WHERE username = $1 AND password = $2', [username, password]);
@@ -64,6 +66,7 @@ module.exports = {
   getTitle,
   getSellers,
   getVendor,
+  getCustomer,
   checkValidCustomer,
   checkValidAdmin,
   addToCart,

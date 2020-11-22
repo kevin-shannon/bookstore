@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  if user.name
+    h1 #{user.name}'s Profile
+  else 
+    h1 #{user.username}'s Profile
+  ul
+    if user.customer_id
+      li= 'customer_id: ' + user.customer_id
+    else
+      li= 'admin_id' + user.admin_id
+    li= 'username: ' + user.username
+    li= 'email: ' + user.email
+    li= 'address: ' + user.address
+    li= 'phone_number: ' + user.phone_number

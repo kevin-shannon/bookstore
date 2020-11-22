@@ -38,7 +38,7 @@ app.get('/login', (req, res) => {
     })
   }
   else {
-    const check = (username, password) => admin ? db.checkValidAdmin(username, password) : db.checkValidCustomer(username, password);
+    const check = (username, password) => parseInt(admin) ? db.checkValidAdmin(username, password) : db.checkValidCustomer(username, password);
     check(username, password).then((user) => {
       res.render('login', {
         success: true
@@ -111,8 +111,12 @@ app.get('/cart', (req, res) => {
   })
 })
 
-app.get('', (req, res) => {
-
+app.get('/profile/:username', (req, res) => {
+  db.getCustomer(req.params.username).then((user) => {
+    res.render('profile', {
+      user
+    })
+  })
 })
 
 // Post Requests

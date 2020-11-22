@@ -5,9 +5,10 @@ html
   body
     a(href='/' + loginInfo) Home
     br
-    if username
-      div Welcome #{username}
-      if !admin
+    if username && !admin
+      div Welcome 
+        a(href='/profile/' + username + loginInfo) #{username}
+        br
         a(href='/cart' + loginInfo) Cart
       br
       a(href='/') Logout

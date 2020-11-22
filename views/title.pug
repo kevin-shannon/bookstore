@@ -21,10 +21,10 @@ block content
         td= seller.condition
         td= seller.published_by
         td: a(href='/vendors/'+seller.vendor_id + loginInfo) #{seller.vendor}
-        if username && !admin
+        if id && !admin
           td
             form(action='/cart/add' method='POST')
               input(type='hidden' name='book_id' value=seller.book_id)
-              input(type='hidden' name='username' value=username)
+              input(type='hidden' name='customer_id' value=id)
               input(type='hidden' name='loginInfo' value=loginInfo)
               button Add to Cart!

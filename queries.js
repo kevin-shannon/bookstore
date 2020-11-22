@@ -3,7 +3,7 @@ var pgp = require('pg-promise')({});
 const cn = 'postgres://postgres:412@localhost:5432/bookstore';
 const db = pgp(cn);
 
-const userify = ({username, password, admin}) => (username && password) ? `?username=${username}&password=${password}&admin=${admin}` : '';
+const userify = ({id, password, admin}) => (id && password) ? `?id=${id}&password=${password}&admin=${admin}` : '';
 
 // Query functions
 
@@ -15,17 +15,17 @@ const getAvailableTitles = () =>db.any('SELECT name, rating, price, title.isbn F
 
 const getAllVendors = () => db.any('SELECT * FROM Vendor');
 
-const getCart = (username) => db.any('SELECT book_id, title.name, price, book.vendor_id, vendor.name AS vendor \
+const getCart = (customer_id) => db.any('SELECT book_id, title.name, price, book.vendor_id, vendor.name AS vendor \
   FROM book, vendor, title, customer \
-  WHERE book.customer_id = customer.customer_id AND customer.username = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', username)
+  WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id)
 
-const getNumItems = (username) => db.one('SELECT COUNT(price) \
+const getNumItems = (customer_id) => db.one('SELECT COUNT(price) \
   FROM book, vendor, title, customer \
-  WHERE book.customer_id = customer.customer_id AND customer.username = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', username);
+  WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
-const getTotalPrice = (username) => db.one('SELECT SUM(price) \
+const getTotalPrice = (customer_id) => db.one('SELECT SUM(price) \
 FROM book, vendor, title, customer \
-WHERE book.customer_id = customer.customer_id AND customer.username = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', username);
+WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
 const getTitle = (isbn) => db.one('SELECT * FROM title WHERE isbn = $1;', isbn)
 
@@ -36,23 +36,28 @@ const getSellers = (isbn) =>
 
 const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1', vendor_id);
 
-const getCustomer = (username) => db.one('SELECT * FROM customer WHERE username = $1', username);
+const getCustomer = (customer_id) => db.one('SELECT * FROM customer WHERE customer_id = $1', customer_id);
 
-const checkValidCustomer = (username, password) => db.one('SELECT * FROM customer WHERE username = $1 AND password = $2', [username, password]);
+const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM customer WHERE customer_id = $1 AND password = $2', [customer_id, password]);
 
-const checkValidAdmin = (username, password) => db.one('SELECT * FROM admin WHERE username = $1 AND password = $2', [username, password]);
+const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2', [admin_id, password]);
+
+const getUserFromId = (id, admin) => admin ? db.one('SELECT username FROM admin WHERE admin_id = $1;', id) : db.one('SELECT username FROM customer WHERE customer_id = $1;', id)
 
 // Modifiers
 
-const addToCart = (book_id, username) => db.any('UPDATE book \
-  SET customer_id = customer.customer_id \
-  FROM customer \
-  WHERE book.book_id = $1 AND customer.username = $2;', [book_id, username]);
+const addToCart = (book_id, customer_id) => {
+  console.log(book_id, customer_id);
+  return db.any('UPDATE book \
+    SET customer_id = customer.customer_id \
+    FROM customer \
+    WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
+  }
 
-const removeFromCart = (book_id, username) => db.any('UPDATE book \
+const removeFromCart = (book_id, customer_id) => db.any('UPDATE book \
   SET customer_id = NULL \
   FROM customer \
-  WHERE book.book_id = $1 AND customer.username = $2;', [book_id, username]);
+  WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
 
 // Exports
 module.exports = {
@@ -70,5 +75,6 @@ module.exports = {
   checkValidCustomer,
   checkValidAdmin,
   addToCart,
+  getUserFromId,
   removeFromCart
 }

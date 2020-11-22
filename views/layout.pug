@@ -5,20 +5,22 @@ html
   body
     a(href='/' + loginInfo) Home
     br
-    if username && !admin
+    if !admin && loginInfo
       div Welcome 
-        a(href='/profile/' + username + loginInfo) #{username}
+        a(href='/profile/' + id + loginInfo) #{username}
         br
         a(href='/cart' + loginInfo) Cart
       br
-      a(href='/') Logout
-    else if username
+    else if loginInfo
       div Welcome #{username}
       br
-      a(href='/') Logout
-    else if path != '/login'
+        
+    if path != '/login' && !loginInfo
       a(href='/login' + loginInfo) Login
-    if path != '/register'
+    else if path != '/login'
+      a(href='/') Logout
+    
+    if path != '/register' && !loginInfo
       | 
       a(href='/register') Register
       

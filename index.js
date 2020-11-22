@@ -15,11 +15,18 @@ app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use((req, res, next) => {
-  res.locals.username = req.query.username;
+  res.locals.id = req.query.id;
   res.locals.path = req.path;
   res.locals.loginInfo = db.userify(req.query);
   res.locals.admin = parseInt(req.query.admin);
-  next();
+  if (res.locals.id ) {
+    db.getUserFromId(req.query.id, res.locals.admin).then((username) => {
+      res.locals.username = username.username;
+      next();
+    });
+  } else {
+    next();
+  }
 })
 
 // Home Route
@@ -31,15 +38,15 @@ app.get('/', (req, res) => {
 
 // Add Routes
 app.get('/login', (req, res) => {
-  const {username, password, admin} = req.query;
-  if (!username) {
+  const {id, password, admin} = req.query;
+  if (!id) {
     res.render('login', {
       success: false
     })
   }
   else {
-    const check = (username, password) => parseInt(admin) ? db.checkValidAdmin(username, password) : db.checkValidCustomer(username, password);
-    check(username, password).then((user) => {
+    const check = (id, password) => parseInt(admin) ? db.checkValidAdmin(id, password) : db.checkValidCustomer(id, password);
+    check(id, password).then((user) => {
       res.render('login', {
         success: true
       })
@@ -51,7 +58,7 @@ app.get('/login', (req, res) => {
 })
 
 app.get('/register', (req, res) => {
-  
+
 })
 
 app.get('/books', (req, res) => {
@@ -102,9 +109,9 @@ app.get('/vendors/:vendor_id', (req, res) => {
 })
 
 app.get('/cart', (req, res) => {
-  let c = db.getCart(req.query.username)
-  let n = db.getNumItems(req.query.username)
-  let p = db.getTotalPrice(req.query.username)
+  let c = db.getCart(req.query.id)
+  let n = db.getNumItems(req.query.id)
+  let p = db.getTotalPrice(req.query.id)
 
   Promise.all([c,n,p]).then(([cart, numItems, totalPrice]) => {
     res.render('cart', {
@@ -115,8 +122,8 @@ app.get('/cart', (req, res) => {
   })
 })
 
-app.get('/profile/:username', (req, res) => {
-  db.getCustomer(req.params.username).then((user) => {
+app.get('/profile/:customer_id', (req, res) => {
+  db.getCustomer(req.params.customer_id).then((user) => {
     res.render('profile', {
       user
     })
@@ -125,13 +132,14 @@ app.get('/profile/:username', (req, res) => {
 
 // Post Requests
 app.post('/cart/add', (req, res) => {
-  db.addToCart(req.body.book_id, req.body.username).then(() => {
+  console.log(req.body);
+  db.addToCart(req.body.book_id, req.body.customer_id).then(() => {
     res.redirect('/cart' + req.body.loginInfo);
   })
 })
 
 app.post('/cart/remove', (req, res) => {
-  db.removeFromCart(req.body.book_id, req.body.username).then(() => {
+  db.removeFromCart(req.body.book_id, req.body.customer_id).then(() => {
     res.redirect('/cart' + req.body.loginInfo);
   })
 })

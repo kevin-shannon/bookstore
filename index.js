@@ -18,6 +18,7 @@ app.use((req, res, next) => {
   res.locals.username = req.query.username;
   res.locals.path = req.path;
   res.locals.loginInfo = db.userify(req.query);
+  res.locals.admin = parseInt(req.query.admin);
   next();
 })
 
@@ -30,15 +31,15 @@ app.get('/', (req, res) => {
 
 // Add Routes
 app.get('/login', (req, res) => {
-  const {username, password} = req.query;
-
+  const {username, password, admin} = req.query;
   if (!username) {
     res.render('login', {
       success: false
     })
   }
   else {
-    db.checkValidUser(username, password).then((user) => {
+    const check = (username, password) => admin ? db.checkValidAdmin(username, password) : db.checkValidCustomer(username, password);
+    check(username, password).then((user) => {
       res.render('login', {
         success: true
       })
@@ -108,6 +109,10 @@ app.get('/cart', (req, res) => {
       totalPrice
     })
   })
+})
+
+app.get('', (req, res) => {
+
 })
 
 // Post Requests

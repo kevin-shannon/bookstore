@@ -3,7 +3,7 @@ var pgp = require('pg-promise')({});
 const cn = 'postgres://postgres:412@localhost:5432/bookstore';
 const db = pgp(cn);
 
-const userify = ({username, password}) => (username && password) ? `?username=${username}&password=${password}` : '';
+const userify = ({username, password, admin}) => (username && password) ? `?username=${username}&password=${password}&admin=${admin}` : '';
 
 // Query functions
 
@@ -36,7 +36,9 @@ const getSellers = (isbn) =>
 
 const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1', vendor_id);
 
-const checkValidUser = (username, password) => db.one('SELECT * FROM customer WHERE username = $1 AND password = $2', [username, password]);
+const checkValidCustomer = (username, password) => db.one('SELECT * FROM customer WHERE username = $1 AND password = $2', [username, password]);
+
+const checkValidAdmin = (username, password) => db.one('SELECT * FROM admin WHERE username = $1 AND password = $2', [username, password]);
 
 // Modifiers
 
@@ -62,7 +64,8 @@ module.exports = {
   getTitle,
   getSellers,
   getVendor,
-  checkValidUser,
+  checkValidCustomer,
+  checkValidAdmin,
   addToCart,
   removeFromCart
 }

@@ -7,9 +7,10 @@ html
     br
     if username
       div Welcome #{username}
-      a(href='/cart' + loginInfo) Cart
+      if !admin
+        a(href='/cart' + loginInfo) Cart
       br
-      a(href=path) Logout
+      a(href='/') Logout
     else if path != '/login'
       a(href='/login' + loginInfo) Login
     block content

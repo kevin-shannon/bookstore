@@ -58,7 +58,7 @@ app.get('/login', (req, res) => {
 })
 
 app.get('/register', (req, res) => {
-
+  res.render('register')
 })
 
 app.get('/books', (req, res) => {
@@ -132,7 +132,7 @@ app.get('/profile/:customer_id', (req, res) => {
 
 // Post Requests
 app.post('/cart/add', (req, res) => {
-  console.log(req.body);
+
   db.addToCart(req.body.book_id, req.body.customer_id).then(() => {
     res.redirect('/cart' + req.body.loginInfo);
   })
@@ -144,6 +144,12 @@ app.post('/cart/remove', (req, res) => {
   })
 })
 
+app.post('/register', (req, res) => {
+  db.addCustomer(req.body).then((customer) => {
+    const loginInfo = db.userify({id: customer.customer_id, password: customer.password, admin: 0})
+    res.redirect('/login' + loginInfo);
+  })
+})
 
 // Start Server
 app.listen(port, () => {

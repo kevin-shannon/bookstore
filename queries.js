@@ -59,6 +59,12 @@ const removeFromCart = (book_id, customer_id) => db.any('UPDATE book \
   FROM customer \
   WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
 
+const addCustomer = ({name, username, email, password, address, phone_number}) => {
+  let customer_id = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000)
+  return db.any('INSERT INTO customer (customer_id, email, address, phone_number, username, name, password) \
+  VALUES ($1, $2, $3, $4, $5, $6, $7);', [customer_id, email, address, phone_number, username, name, password]);
+}
+
 // Exports
 module.exports = {
   userify,
@@ -76,5 +82,6 @@ module.exports = {
   checkValidAdmin,
   addToCart,
   getUserFromId,
-  removeFromCart
+  removeFromCart,
+  addCustomer
 }

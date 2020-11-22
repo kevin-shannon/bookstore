@@ -50,6 +50,10 @@ app.get('/login', (req, res) => {
   }
 })
 
+app.get('/register', (req, res) => {
+  
+})
+
 app.get('/books', (req, res) => {
   db.getAllBooks().then((books) => {
     res.render('books', {

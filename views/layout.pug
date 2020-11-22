@@ -12,8 +12,16 @@ html
         a(href='/cart' + loginInfo) Cart
       br
       a(href='/') Logout
+    else if username
+      div Welcome #{username}
+      br
+      a(href='/') Logout
     else if path != '/login'
       a(href='/login' + loginInfo) Login
+    if path != '/register'
+      | 
+      a(href='/register') Register
+      
     block content
     br
     hr

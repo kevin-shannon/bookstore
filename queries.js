@@ -44,16 +44,16 @@ const getAllVendors = () => db.any('SELECT * FROM vendor');
 const getAllAuthors = () => db.any('SELECT * FROM author');
 
 const getCart = (customer_id) => db.any('SELECT book_id, title.name, price, book.vendor_id, vendor.name AS vendor \
-  FROM book, vendor, title, customer \
-  WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id)
+  FROM book, vendor, title \
+  WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id)
 
 const getNumItems = (customer_id) => db.one('SELECT COUNT(price) \
-  FROM book, vendor, title, customer \
-  WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
+  FROM book, vendor, title \
+  WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
 const getTotalPrice = (customer_id) => db.one('SELECT SUM(price) \
-FROM book, vendor, title, customer \
-WHERE book.customer_id = customer.customer_id AND customer.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
+FROM book, vendor, title \
+WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
 const getTitle = (isbn) => db.one("SELECT name, rating, price, published_date, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, published_date, title_agg.isbn, genre_list \

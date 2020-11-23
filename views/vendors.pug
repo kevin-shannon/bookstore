@@ -1,7 +1,15 @@
 extends layout
 
 block content
-  h1 #{title}
+  h1 Vendors
+  if admin
+    form(action='/vendors/add' method='POST')
+      input(type='text' name='vendor_id' placeholder='vendor_id')
+      input(type='text' name='name' placeholder='name')
+      input(type='text' name='url' placeholder='url')
+      input(type='text' name='address' placeholder='address')
+      input(type='hidden' name='loginInfo' value=loginInfo)
+      input(type='submit' value='Add')
   table
     tr
       th vendor_id
@@ -14,3 +22,9 @@ block content
         td= vendor.name
         td: a(href=vendor.url) #{vendor.url}
         td= vendor.address
+        if id && admin
+          td
+            form(action='/vendors/remove' method='POST')
+              input(type='hidden' name='vendor_id' value=vendor.vendor_id)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Remove

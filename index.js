@@ -31,9 +31,7 @@ app.use((req, res, next) => {
 
 // Home Route
 app.get('/', (req, res) => {
-  res.render('index', {
-    title:'Home',
-  })
+  res.render('index', {})
 })
 
 // Add Routes
@@ -64,7 +62,6 @@ app.get('/register', (req, res) => {
 app.get('/books', (req, res) => {
   db.getAllBooks().then((books) => {
     res.render('books', {
-      title: 'Books',
       books
     })
   });
@@ -74,7 +71,6 @@ app.get('/titles', (req, res) => {
   const choose = () => parseInt(req.query.admin) ? db.getAllTitles() : db.getAvailableTitles();
   choose().then((titles) => {
     res.render('titles', {
-      title: 'Titles',
       titles
     })
   });
@@ -83,7 +79,6 @@ app.get('/titles', (req, res) => {
 app.get('/vendors', (req, res) => {
   db.getAllVendors().then((vendors) => {
     res.render('vendors', {
-      title: 'Vendors',
       vendors
     })
   });
@@ -164,7 +159,19 @@ app.post('/titles/remove', (req, res) => {
   })
 })
 
+app.post('/vendors/add', (req, res) => {
+  db.addVendor(req.body).then(() => {
+    res.redirect('/vendors' + req.body.loginInfo);
+  })
+})
+
+app.post('/vendors/remove', (req, res) => {
+  db.removeVendor(req.body.vendor_id).then(() => {
+    res.redirect('/vendors' + req.body.loginInfo);
+  })
+})
+
 // Start Server
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Bookstore app listening at http://localhost:${port}`)
 })

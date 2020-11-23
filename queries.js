@@ -76,6 +76,15 @@ const removeTitle = ((isbn) =>
   db.any('DELETE FROM title WHERE isbn = $1;', isbn)
 )
 
+const addVendor = (({vendor_id, name, url, address}) =>
+  db.any('INSERT INTO vendor (vendor_id, name, url, address) \
+  VALUES ($1, $2, $3, $4);', [vendor_id, name, url, address])
+)
+
+const removeVendor = ((vendor_id) =>
+  db.any('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id)
+)
+
 // Exports
 module.exports = {
   userify,
@@ -97,5 +106,7 @@ module.exports = {
   removeFromCart,
   addCustomer,
   addTitle,
-  removeTitle
+  removeTitle,
+  addVendor,
+  removeVendor
 }

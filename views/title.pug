@@ -7,6 +7,9 @@ block content
     li= 'isbn: ' + title.isbn
     li= 'rating: ' + title.rating + '/100'
     li= 'published: ' + title.published_date
+    li= 'genre_list: ' + title.genre_list
+    if title.author_list
+      li= 'author_list: ' + title.author_list
   
   h3 Sellers
   table

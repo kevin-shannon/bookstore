@@ -71,7 +71,8 @@ app.get('/books', (req, res) => {
 })
 
 app.get('/titles', (req, res) => {
-  db.getAvailableTitles().then((titles) => {
+  const choose = () => parseInt(req.query.admin) ? db.getAllTitles() : db.getAvailableTitles();
+  choose().then((titles) => {
     res.render('titles', {
       title: 'Titles',
       titles
@@ -148,6 +149,18 @@ app.post('/register', (req, res) => {
   db.addCustomer(req.body).then((customer) => {
     const loginInfo = db.userify({id: customer.customer_id, password: customer.password, admin: 0})
     res.redirect('/login' + loginInfo);
+  })
+})
+
+app.post('/titles/add', (req, res) => {
+  db.addTitle(req.body).then(() => {
+    res.redirect('/titles' + req.body.loginInfo);
+  })
+})
+
+app.post('/titles/remove', (req, res) => {
+  db.removeTitle(req.body.isbn).then(() => {
+    res.redirect('/titles' + req.body.loginInfo);
   })
 })
 

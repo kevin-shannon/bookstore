@@ -11,7 +11,9 @@ const getAllBooks = () => db.any('SELECT book_id, title.name, book.isbn, vendor.
   FROM book, title, vendor, admin, author, written_by \
   WHERE book.ISBN = title.ISBN AND book.admin_id = admin.admin_id AND book.vendor_id = vendor.vendor_id AND title.isbn = written_by.isbn AND written_by.author_id = author.author_id;');
 
-const getAvailableTitles = () =>db.any('SELECT name, rating, price, title.isbn FROM book, title WHERE book.ISBN = title.ISBN AND customer_id is null');
+const getAvailableTitles = () => db.any('SELECT name, rating, MIN(price), title.isbn FROM book, title WHERE book.isbn = title.isbn AND customer_id is null GROUP BY title.isbn;');
+
+const getAllTitles = () => db.any('SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.ISBN = book.ISBN GROUP BY title.isbn;');
 
 const getAllVendors = () => db.any('SELECT * FROM Vendor');
 
@@ -65,11 +67,21 @@ const addCustomer = ({name, username, email, password, address, phone_number}) =
   VALUES ($1, $2, $3, $4, $5, $6, $7);', [customer_id, email, address, phone_number, username, name, password]);
 }
 
+const addTitle = (({isbn, name, published_date, rating}) =>
+  db.any('INSERT INTO title (isbn, name, published_date, rating) \
+  VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating])
+)
+
+const removeTitle = ((isbn) =>
+  db.any('DELETE FROM title WHERE isbn = $1;', isbn)
+)
+
 // Exports
 module.exports = {
   userify,
   getAllBooks,
   getAvailableTitles,
+  getAllTitles,
   getAllVendors,
   getCart,
   getNumItems,
@@ -83,5 +95,7 @@ module.exports = {
   addToCart,
   getUserFromId,
   removeFromCart,
-  addCustomer
+  addCustomer,
+  addTitle,
+  removeTitle
 }

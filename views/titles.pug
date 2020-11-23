@@ -2,6 +2,14 @@ extends layout
 
 block content
   h1 #{title}
+  if admin
+    form(action='/titles/add' method='POST')
+      input(type='text' name='isbn' placeholder='ISBN')
+      input(type='text' name='name' placeholder='Name')
+      input(type='text' name='published_date' placeholder='Published Date')
+      input(type='text' name='rating' placeholder='Rating')
+      input(type='hidden' name='loginInfo' value=loginInfo)
+      input(type='submit' value='Add')
   table
     tr
       th Title
@@ -12,3 +20,9 @@ block content
         td: a(href='/titles/' + title.isbn + loginInfo) #{title.name}
         td= title.rating
         td= title.price
+        if id && admin
+          td
+            form(action='/titles/remove' method='POST')
+              input(type='hidden' name='isbn' value=title.isbn)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Remove

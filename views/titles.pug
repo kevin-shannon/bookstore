@@ -7,17 +7,23 @@ block content
       input(type='text' name='isbn' placeholder='ISBN')
       input(type='text' name='name' placeholder='Name')
       input(type='text' name='published_date' placeholder='Published Date')
+      br
       input(type='text' name='rating' placeholder='Rating')
+      input(type='text' name='genre_list' placeholder='Genre list')
+      input(type='text' name='author_list' placeholder='author_id list')
       input(type='hidden' name='loginInfo' value=loginInfo)
       input(type='submit' value='Add')
   table
     tr
       th Title
+      th Genres
       th Rating
       th Price
+      
     each title, i in titles
       tr
         td: a(href='/titles/' + title.isbn + loginInfo) #{title.name}
+        td= title.genre_list
         td= title.rating
         td= title.price
         if id && admin

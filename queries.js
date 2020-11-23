@@ -19,7 +19,10 @@ const getAllBooks = () => db.any("SELECT book_id, name, book_preview.isbn, vendo
 
 const getAvailableTitles = () => db.any('SELECT name, rating, MIN(price), title.isbn FROM book, title WHERE book.isbn = title.isbn AND customer_id is null GROUP BY title.isbn;');
 
-const getAllTitles = () => db.any('SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.isbn = book.isbn GROUP BY title.isbn;');
+const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list \
+  FROM (SELECT isbn, STRING_AGG(type, ', ') AS genre_list FROM categorized_by GROUP BY isbn) AS genre_agg, \
+       (SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.isbn = book.isbn GROUP BY title.isbn) AS title_agg \
+  WHERE genre_agg.isbn = title_agg.isbn;");
 
 const getAllVendors = () => db.any('SELECT * FROM Vendor');
 
@@ -82,10 +85,17 @@ const addCustomer = ({name, username, email, password, address, phone_number}) =
   VALUES ($1, $2, $3, $4, $5, $6, $7);', [customer_id, email, address, phone_number, username, name, password]);
 }
 
-const addTitle = (({isbn, name, published_date, rating}) =>
+const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}) => {
   db.any('INSERT INTO title (isbn, name, published_date, rating) \
   VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating])
-)
+
+
+  const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+  const values = '(' + cartesian([isbn], author_list.split(',')).join('), (') + ')';
+  console.log(values);
+  const a = db.any('INSERT INTO written_by (isbn, author_id) VALUES $1', values);
+  return Promise.all([b,a]);
+})
 
 const removeTitle = ((isbn) => db.any('DELETE FROM title WHERE isbn = $1;', isbn));
 

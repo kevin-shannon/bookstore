@@ -69,12 +69,15 @@ const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM cust
 
 const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2', [admin_id, password]);
 
+const checkValidTitle = ({genre_list, author_list}) => {
+  g = db.one('SELECT COUNT(type) FROM genre WHERE type in (${genre_list:raw}) HAVING COUNT(type) = ${length};', {genre_list: genre_list.split(',').map(s => `'${s}'`).join(', '), length: genre_list.replace(/[^,]/g, "").length+1});
+  a = db.one('SELECT COUNT(author_id) FROM author WHERE author_id in ($1:raw) HAVING COUNT(author_id) = $2;', [author_list, author_list.replace(/[^,]/g, "").length+1]);
+  return Promise.all([g,a]);
+}
+
 const checkValidBook = ({isbn, vendor_id}) => {
-  console.log(isbn, vendor_id);
   const i = db.one('SELECT isbn FROM title WHERE isbn = $1;', isbn);
   const v = db.one('SELECT vendor_id FROM vendor WHERE vendor_id = $1;', vendor_id);
-  //const a = db.one('SELECT COUNT(author_id) FROM author WHERE author_id in ($1) HAVING COUNT(author_id) = $2;', author_list, author_list.replace(/[^,]/g, "").length+1);
-  //const p = db.one('SELECT admin_id FROM book WHERE admin_id = $1;', admin_id);
   return Promise.all([i,v]);
 }
 
@@ -83,7 +86,6 @@ const getUserFromId = (id, admin) => admin ? db.one('SELECT username FROM admin 
 // Modifiers
 
 const addToCart = (book_id, customer_id) => {
-  console.log(book_id, customer_id);
   return db.any('UPDATE book \
     SET customer_id = customer.customer_id \
     FROM customer \
@@ -102,15 +104,27 @@ const addCustomer = ({name, username, email, password, address, phone_number}) =
 }
 
 const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}) => {
-  db.any('INSERT INTO title (isbn, name, published_date, rating) \
-  VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating])
 
+  const t = db.none('INSERT INTO title (isbn, name, published_date, rating) \
+  VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating]);
 
-  const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
-  const values = '(' + cartesian([isbn], author_list.split(',')).join('), (') + ')';
-  console.log(values);
-  const a = db.any('INSERT INTO written_by (isbn, author_id) VALUES $1', values);
-  return Promise.all([b,a]);
+  let genre_values = [];
+  for (const type of genre_list.split(',')) {
+    genre_values.push({isbn, type});
+  }
+
+  let author_values = [];
+  for (const author_id of author_list.split(',').map(Number)) {
+    author_values.push({isbn, author_id});
+  }
+
+  const gcs = new pgp.helpers.ColumnSet(['isbn', 'type'], {table: 'categorized_by'});
+  const acs = new pgp.helpers.ColumnSet(['isbn', 'author_id'], {table: 'written_by'});
+
+  const g = db.none(pgp.helpers.insert(genre_values, gcs));
+  const a = db.none(pgp.helpers.insert(author_values, acs));
+
+  return Promise.all([t,g,a]);
 })
 
 const removeTitle = ((isbn) => db.any('DELETE FROM title WHERE isbn = $1;', isbn));
@@ -123,7 +137,6 @@ const addVendor = (({vendor_id, name, url, address}) =>
 const removeVendor = ((vendor_id) => db.any('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id));
 
 const addBook = (({book_id, condition, price, admin_id, vendor_id, isbn}) => {
-  console.log(book_id, condition, price, admin_id, vendor_id, isbn)
   return db.any('INSERT INTO book (book_id, condition, price, admin_id, vendor_id, isbn) \
   VALUES ($1, $2, $3, $4, $5, $6);', [book_id, condition, price, admin_id, vendor_id, isbn]);
 })
@@ -146,6 +159,7 @@ module.exports = {
   getCustomer,
   checkValidCustomer,
   checkValidAdmin,
+  checkValidTitle,
   checkValidBook,
   addToCart,
   getUserFromId,

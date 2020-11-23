@@ -79,7 +79,6 @@ const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM cust
 const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2', [admin_id, password]);
 
 const checkValidTitle = ({genre_list, author_list}) => {
-  console.log(genre_list, author_list);
   g = db.one('SELECT COUNT(type) FROM genre WHERE type in (${genre_list:raw}) HAVING COUNT(type) = ${length};', {genre_list: genre_list.split(',').map(s => `'${s}'`).join(', '), length: genre_list.replace(/[^,]/g, "").length+1});
   if (author_list)
     a = db.one('SELECT COUNT(author_id) FROM author WHERE author_id in ($1:raw) HAVING COUNT(author_id) = $2;', [author_list, author_list.replace(/[^,]/g, "").length+1]);
@@ -117,7 +116,6 @@ const addCustomer = ({name, username, email, password, address, phone_number}) =
 }
 
 const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}) => {
-  console.log(author_list);
   const t = db.none('INSERT INTO title (isbn, name, published_date, rating) \
   VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating]);
 
@@ -137,13 +135,10 @@ const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}
   const acs = new pgp.helpers.ColumnSet(['isbn', 'author_id'], {table: 'written_by'});
 
   const g = db.none(pgp.helpers.insert(genre_values, gcs));
-  if (author_values != false) {
-    console.log('authors exist!!!!', author_values);
+  if (author_values != false)
     a = db.none(pgp.helpers.insert(author_values, acs));
-  }
-  else {
+  else
     a = Promise.resolve();
-  }
 
   return Promise.all([t,g,a]);
 })

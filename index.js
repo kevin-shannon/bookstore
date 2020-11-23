@@ -148,12 +148,10 @@ app.post('/register', (req, res) => {
 
 app.post('/titles/add', (req, res) => {
   db.checkValidTitle(req.body).then(() =>{
-    console.log('valid');
     db.addTitle(req.body).then(() => {
       res.redirect('/titles' + req.body.loginInfo);
     })
   }).catch((result) => {
-    console.log(result);
     res.redirect('/titles' + req.body.loginInfo);
   })
 })

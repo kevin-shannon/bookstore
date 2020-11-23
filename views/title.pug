@@ -18,12 +18,14 @@ block content
       th condition
       th published_by
       th vendor
+      th price
     each seller, i in sellers
       tr
         td= seller.book_id
         td= seller.condition
         td= seller.published_by
         td: a(href='/vendors/'+seller.vendor_id + loginInfo) #{seller.vendor}
+        td= seller.price
         if id && !admin
           td
             form(action='/cart/add' method='POST')

@@ -17,7 +17,16 @@ const getAllBooks = () => db.any("SELECT book_id, name, book_preview.isbn, vendo
                    WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS agg_written_by \
   ON book_preview.isbn = agg_written_by.isbn;");
 
-const getAvailableTitles = () => db.any('SELECT name, rating, MIN(price), title.isbn FROM book, title WHERE book.isbn = title.isbn AND customer_id is null GROUP BY title.isbn;');
+const getAvailableTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
+  FROM (SELECT name, rating, price, title_agg.isbn, genre_list \
+        FROM (SELECT isbn, STRING_AGG(type, ', ') AS genre_list FROM categorized_by GROUP BY isbn) AS genre_agg, \
+             (SELECT name, rating, MIN(price) AS price, title.isbn FROM title, book WHERE title.isbn = book.isbn AND book.customer_id is null GROUP BY title.isbn) AS title_agg \
+        WHERE genre_agg.isbn = title_agg.isbn) AS title_agg \
+  LEFT JOIN (SELECT isbn, STRING_AGG(name::character varying, ', ') author_list \
+             FROM (SELECT isbn, name \
+                   FROM written_by, author \
+                   WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS written_by_agg \
+  ON title_agg.isbn = written_by_agg.isbn;");
 
 const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, title_agg.isbn, genre_list \
@@ -57,7 +66,7 @@ const getTitle = (isbn) => db.one("SELECT name, rating, price, published_date, t
   WHERE title_agg.isbn = $1;", isbn);
 
 const getSellers = (isbn) =>
-  db.any('SELECT book_id, condition, admin.username AS published_by, admin.admin_id, vendor.name AS vendor, vendor.vendor_id \
+  db.any('SELECT book_id, condition, admin.username AS published_by, admin.admin_id, vendor.name AS vendor, vendor.vendor_id, price \
     FROM book, admin, vendor \
     WHERE isbn = $1 and customer_id is null AND book.vendor_id = vendor.vendor_id AND book.admin_id = admin.admin_id;', isbn)
 

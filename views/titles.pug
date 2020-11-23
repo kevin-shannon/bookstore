@@ -17,6 +17,7 @@ block content
     tr
       th Title
       th Genres
+      th Authors
       th Rating
       th Price
       
@@ -24,6 +25,7 @@ block content
       tr
         td: a(href='/titles/' + title.isbn + loginInfo) #{title.name}
         td= title.genre_list
+        td= title.author_list
         td= title.rating
         td= title.price
         if id && admin

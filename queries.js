@@ -7,13 +7,19 @@ const userify = ({id, password, admin}) => (id && password) ? `?id=${id}&passwor
 
 // Query functions
 
-const getAllBooks = () => db.any('SELECT book_id, title.name, book.isbn, vendor.name AS vendor_name, author.name AS author_name, admin.username \
-  FROM book, title, vendor, admin, author, written_by \
-  WHERE book.ISBN = title.ISBN AND book.admin_id = admin.admin_id AND book.vendor_id = vendor.vendor_id AND title.isbn = written_by.isbn AND written_by.author_id = author.author_id;');
+const getAllBooks = () => db.any("SELECT book_id, name, book_preview.isbn, vendor_name, author_list, published_by \
+  FROM (SELECT book_id, title.name, book.isbn, vendor.name AS vendor_name, admin.username AS published_by \
+        FROM book, title, vendor, admin \
+        WHERE book.isbn = title.isbn AND book.admin_id = admin.admin_id AND book.vendor_id = vendor.vendor_id) AS book_preview \
+  LEFT JOIN (SELECT isbn, STRING_AGG(name::character varying, ', ') author_list \
+             FROM (SELECT isbn, name \
+                   FROM written_by, author \
+                   WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS agg_written_by \
+  ON book_preview.isbn = agg_written_by.isbn;");
 
 const getAvailableTitles = () => db.any('SELECT name, rating, MIN(price), title.isbn FROM book, title WHERE book.isbn = title.isbn AND customer_id is null GROUP BY title.isbn;');
 
-const getAllTitles = () => db.any('SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.ISBN = book.ISBN GROUP BY title.isbn;');
+const getAllTitles = () => db.any('SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.isbn = book.isbn GROUP BY title.isbn;');
 
 const getAllVendors = () => db.any('SELECT * FROM Vendor');
 
@@ -44,6 +50,15 @@ const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM cust
 
 const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2', [admin_id, password]);
 
+const checkValidBook = ({isbn, vendor_id}) => {
+  console.log(isbn, vendor_id);
+  const i = db.one('SELECT isbn FROM title WHERE isbn = $1;', isbn);
+  const v = db.one('SELECT vendor_id FROM vendor WHERE vendor_id = $1;', vendor_id);
+  //const a = db.one('SELECT COUNT(author_id) FROM author WHERE author_id in ($1) HAVING COUNT(author_id) = $2;', author_list, author_list.replace(/[^,]/g, "").length+1);
+  //const p = db.one('SELECT admin_id FROM book WHERE admin_id = $1;', admin_id);
+  return Promise.all([i,v]);
+}
+
 const getUserFromId = (id, admin) => admin ? db.one('SELECT username FROM admin WHERE admin_id = $1;', id) : db.one('SELECT username FROM customer WHERE customer_id = $1;', id)
 
 // Modifiers
@@ -72,18 +87,22 @@ const addTitle = (({isbn, name, published_date, rating}) =>
   VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating])
 )
 
-const removeTitle = ((isbn) =>
-  db.any('DELETE FROM title WHERE isbn = $1;', isbn)
-)
+const removeTitle = ((isbn) => db.any('DELETE FROM title WHERE isbn = $1;', isbn));
 
 const addVendor = (({vendor_id, name, url, address}) =>
   db.any('INSERT INTO vendor (vendor_id, name, url, address) \
   VALUES ($1, $2, $3, $4);', [vendor_id, name, url, address])
 )
 
-const removeVendor = ((vendor_id) =>
-  db.any('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id)
-)
+const removeVendor = ((vendor_id) => db.any('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id));
+
+const addBook = (({book_id, condition, price, admin_id, vendor_id, isbn}) => {
+  console.log(book_id, condition, price, admin_id, vendor_id, isbn)
+  return db.any('INSERT INTO book (book_id, condition, price, admin_id, vendor_id, isbn) \
+  VALUES ($1, $2, $3, $4, $5, $6);', [book_id, condition, price, admin_id, vendor_id, isbn]);
+})
+
+const removeBook = ((book_id) => db.any('DELETE FROM book WHERE book_id = $1;', book_id));
 
 // Exports
 module.exports = {
@@ -101,6 +120,7 @@ module.exports = {
   getCustomer,
   checkValidCustomer,
   checkValidAdmin,
+  checkValidBook,
   addToCart,
   getUserFromId,
   removeFromCart,
@@ -108,5 +128,7 @@ module.exports = {
   addTitle,
   removeTitle,
   addVendor,
-  removeVendor
+  removeVendor,
+  addBook,
+  removeBook
 }

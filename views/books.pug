@@ -2,19 +2,36 @@ extends layout
 
 block content
   h1 Books
+  if admin
+    form(action='/books/add' method='POST')
+      input(type='text' name='book_id' placeholder='book_id')
+      input(type='text' name='condition' placeholder='condition')
+      input(type='text' name='price' placeholder='price')
+      br
+      input(type='text' name='vendor_id' placeholder='vendor_id')
+      input(type='text' name='isbn' placeholder='ISBN')
+      input(type='hidden' name='admin_id', value=id)
+      input(type='hidden' name='loginInfo' value=loginInfo)
+      input(type='submit' value='Add')
   table
     tr
       th book_id
       th name
       th ISBN
       th vendor_name
-      th author_name
-      th username
+      th author_list
+      th published_by
     each book, i in books
       tr
         td= book.book_id
         td= book.name
         td= book.isbn
         td= book.vendor_name
-        td= book.author_name
-        td= book.username
+        td= book.author_list
+        td= book.published_by
+        if id && admin
+          td
+            form(action='/books/remove' method='POST')
+              input(type='hidden' name='book_id' value=book.book_id)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Remove

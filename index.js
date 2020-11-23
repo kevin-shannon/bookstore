@@ -128,7 +128,6 @@ app.get('/profile/:customer_id', (req, res) => {
 
 // Post Requests
 app.post('/cart/add', (req, res) => {
-
   db.addToCart(req.body.book_id, req.body.customer_id).then(() => {
     res.redirect('/cart' + req.body.loginInfo);
   })
@@ -168,6 +167,23 @@ app.post('/vendors/add', (req, res) => {
 app.post('/vendors/remove', (req, res) => {
   db.removeVendor(req.body.vendor_id).then(() => {
     res.redirect('/vendors' + req.body.loginInfo);
+  })
+})
+
+app.post('/books/add', (req, res) => {
+  db.checkValidBook(req.body).then(() =>{
+    db.addBook(req.body).then(() => {
+      res.redirect('/books' + req.body.loginInfo);
+    })
+  }).catch((result) => {
+    console.log(result);
+    res.redirect('/books' + req.body.loginInfo);
+  })
+})
+
+app.post('/books/remove', (req, res) => {
+  db.removeBook(req.body.book_id).then(() => {
+    res.redirect('/books' + req.body.loginInfo);
   })
 })
 

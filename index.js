@@ -84,6 +84,14 @@ app.get('/vendors', (req, res) => {
   });
 })
 
+app.get('/authors', (req, res) => {
+  db.getAllAuthors().then((authors) => {
+    res.render('authors', {
+      authors
+    })
+  });
+})
+
 app.get('/titles/:isbn', (req, res) => {
   let t = db.getTitle(req.params.isbn)
   let s = db.getSellers(req.params.isbn)
@@ -171,6 +179,18 @@ app.post('/vendors/add', (req, res) => {
 app.post('/vendors/remove', (req, res) => {
   db.removeVendor(req.body.vendor_id).then(() => {
     res.redirect('/vendors' + req.body.loginInfo);
+  })
+})
+
+app.post('/authors/add', (req, res) => {
+  db.addAuthor(req.body).then(() => {
+    res.redirect('/authors' + req.body.loginInfo);
+  })
+})
+
+app.post('/authors/remove', (req, res) => {
+  db.removeAuthor(req.body.author_id).then(() => {
+    res.redirect('/authors' + req.body.loginInfo);
   })
 })
 

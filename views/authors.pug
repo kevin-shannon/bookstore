@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  h1 Authors
+  if admin
+    form(action='/authors/add' method='POST')
+      input(type='text' name='author_id' placeholder='author_id')
+      input(type='text' name='name' placeholder='name')
+      input(type='text' name='url' placeholder='url')
+      input(type='text' name='address' placeholder='address')
+      input(type='hidden' name='loginInfo' value=loginInfo)
+      input(type='submit' value='Add')
+  table
+    tr
+      th author_id
+      th name
+      th url
+      th address
+    each author, i in authors
+      tr
+        td= author.author_id
+        td= author.name
+        td: a(href=author.url) #{author.url}
+        td= author.address
+        if id && admin
+          td
+            form(action='/authors/remove' method='POST')
+              input(type='hidden' name='author_id' value=author.author_id)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Remove

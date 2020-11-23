@@ -39,7 +39,9 @@ const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, g
                    WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS written_by_agg \
   ON title_agg.isbn = written_by_agg.isbn;");
 
-const getAllVendors = () => db.any('SELECT * FROM Vendor');
+const getAllVendors = () => db.any('SELECT * FROM vendor');
+
+const getAllAuthors = () => db.any('SELECT * FROM author');
 
 const getCart = (customer_id) => db.any('SELECT book_id, title.name, price, book.vendor_id, vendor.name AS vendor \
   FROM book, vendor, title, customer \
@@ -159,6 +161,13 @@ const addBook = (({book_id, condition, price, admin_id, vendor_id, isbn}) => {
 
 const removeBook = ((book_id) => db.any('DELETE FROM book WHERE book_id = $1;', book_id));
 
+const addAuthor = (({author_id, name, url, address}) =>
+  db.any('INSERT INTO author (author_id, name, url, address) \
+  VALUES ($1, $2, $3, $4);', [author_id, name, url, address])
+)
+
+const removeAuthor = ((author_id) => db.any('DELETE FROM author WHERE author_id = $1;', author_id));
+
 // Exports
 module.exports = {
   userify,
@@ -166,6 +175,7 @@ module.exports = {
   getAvailableTitles,
   getAllTitles,
   getAllVendors,
+  getAllAuthors,
   getCart,
   getNumItems,
   getTotalPrice,
@@ -185,6 +195,8 @@ module.exports = {
   removeTitle,
   addVendor,
   removeVendor,
+  addAuthor,
+  removeAuthor,
   addBook,
   removeBook
 }

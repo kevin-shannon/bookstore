@@ -51,9 +51,8 @@ const getNumItems = (customer_id) => db.one('SELECT COUNT(price) \
   FROM book, vendor, title \
   WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
-const getTotalPrice = (customer_id) => db.one('SELECT SUM(price) \
-FROM book, vendor, title \
-WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
+const getTotalPrice = (customer_id) => db.one('SELECT SUM(price) FROM book, vendor, title \
+  WHERE book.customer_id = $1 AND book.isbn = title.isbn AND book.vendor_id = vendor.vendor_id;', customer_id);
 
 const getTitle = (isbn) => db.one("SELECT name, rating, price, published_date, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, published_date, title_agg.isbn, genre_list \
@@ -67,18 +66,19 @@ const getTitle = (isbn) => db.one("SELECT name, rating, price, published_date, t
   ON title_agg.isbn = written_by_agg.isbn \
   WHERE title_agg.isbn = $1;", isbn);
 
-const getSellers = (isbn) =>
-  db.any('SELECT book_id, condition, admin.username AS published_by, admin.admin_id, vendor.name AS vendor, vendor.vendor_id, price \
-    FROM book, admin, vendor \
-    WHERE isbn = $1 and customer_id is null AND book.vendor_id = vendor.vendor_id AND book.admin_id = admin.admin_id;', isbn)
+const getSellers = (isbn) => db.any('SELECT book_id, condition, admin.username AS published_by, admin.admin_id, vendor.name AS vendor, vendor.vendor_id, price \
+  FROM book, admin, vendor \
+  WHERE isbn = $1 and customer_id is null AND book.vendor_id = vendor.vendor_id AND book.admin_id = admin.admin_id;', isbn)
 
-const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1', vendor_id);
+const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1;', vendor_id);
 
-const getCustomer = (customer_id) => db.one('SELECT * FROM customer WHERE customer_id = $1', customer_id);
+const getCustomers = () => db.any('SELECT username, name, address, email, customer_id FROM customer;');
 
-const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM customer WHERE customer_id = $1 AND password = $2', [customer_id, password]);
+const getCustomer = (customer_id) => db.one('SELECT * FROM customer WHERE customer_id = $1;', customer_id);
 
-const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2', [admin_id, password]);
+const checkValidCustomer = (customer_id, password) => db.one('SELECT * FROM customer WHERE customer_id = $1 AND password = $2;', [customer_id, password]);
+
+const checkValidAdmin = (admin_id, password) => db.one('SELECT * FROM admin WHERE admin_id = $1 AND password = $2;', [admin_id, password]);
 
 const checkValidTitle = ({genre_list, author_list}) => {
   g = db.one('SELECT COUNT(type) FROM genre WHERE type in (${genre_list:raw}) HAVING COUNT(type) = ${length};', {genre_list: genre_list.split(',').map(s => `'${s}'`).join(', '), length: genre_list.replace(/[^,]/g, "").length+1});
@@ -99,25 +99,19 @@ const getUserFromId = (id, admin) => admin ? db.one('SELECT username FROM admin 
 
 // Modifiers
 
-const addToCart = (book_id, customer_id) => {
-  return db.any('UPDATE book \
-    SET customer_id = customer.customer_id \
-    FROM customer \
-    WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
-  }
+const addToCart = (book_id, customer_id) => db.none('UPDATE book SET customer_id = customer.customer_id FROM customer \
+  WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
 
-const removeFromCart = (book_id, customer_id) => db.any('UPDATE book \
-  SET customer_id = NULL \
-  FROM customer \
+const removeFromCart = (book_id, customer_id) => db.none('UPDATE book SET customer_id = NULL FROM customer \
   WHERE book.book_id = $1 AND customer.customer_id = $2;', [book_id, customer_id]);
 
 const addCustomer = ({name, username, email, password, address, phone_number}) => {
   let customer_id = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000)
-  return db.any('INSERT INTO customer (customer_id, email, address, phone_number, username, name, password) \
+  return db.none('INSERT INTO customer (customer_id, email, address, phone_number, username, name, password) \
   VALUES ($1, $2, $3, $4, $5, $6, $7);', [customer_id, email, address, phone_number, username, name, password]);
 }
 
-const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}) => {
+const addTitle = ({isbn, name, published_date, rating, genre_list, author_list}) => {
   const t = db.none('INSERT INTO title (isbn, name, published_date, rating) \
   VALUES ($1, $2, $3, $4);', [isbn, name, published_date, rating]);
 
@@ -143,30 +137,27 @@ const addTitle = (({isbn, name, published_date, rating, genre_list, author_list}
     a = Promise.resolve();
 
   return Promise.all([t,g,a]);
-})
+};
 
 const removeTitle = ((isbn) => db.any('DELETE FROM title WHERE isbn = $1;', isbn));
 
-const addVendor = (({vendor_id, name, url, address}) =>
-  db.any('INSERT INTO vendor (vendor_id, name, url, address) \
-  VALUES ($1, $2, $3, $4);', [vendor_id, name, url, address])
-)
+const addVendor = ({vendor_id, name, url, address}) => db.none('INSERT INTO vendor (vendor_id, name, url, address) \
+  VALUES ($1, $2, $3, $4);', [vendor_id, name, url, address]);
 
-const removeVendor = ((vendor_id) => db.any('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id));
 
-const addBook = (({book_id, condition, price, admin_id, vendor_id, isbn}) => {
-  return db.any('INSERT INTO book (book_id, condition, price, admin_id, vendor_id, isbn) \
+const removeVendor = (vendor_id) => db.none('DELETE FROM vendor WHERE vendor_id = $1;', vendor_id);
+
+const addBook = ({book_id, condition, price, admin_id, vendor_id, isbn}) => db.none('INSERT INTO book (book_id, condition, price, admin_id, vendor_id, isbn) \
   VALUES ($1, $2, $3, $4, $5, $6);', [book_id, condition, price, admin_id, vendor_id, isbn]);
-})
 
-const removeBook = ((book_id) => db.any('DELETE FROM book WHERE book_id = $1;', book_id));
+const removeBook = (book_id) => db.none('DELETE FROM book WHERE book_id = $1;', book_id);
 
-const addAuthor = (({author_id, name, url, address}) =>
-  db.any('INSERT INTO author (author_id, name, url, address) \
-  VALUES ($1, $2, $3, $4);', [author_id, name, url, address])
-)
+const addAuthor = ({author_id, name, url, address}) => db.none('INSERT INTO author (author_id, name, url, address) \
+  VALUES ($1, $2, $3, $4);', [author_id, name, url, address]);
 
-const removeAuthor = ((author_id) => db.any('DELETE FROM author WHERE author_id = $1;', author_id));
+const removeAuthor = (author_id) => db.none('DELETE FROM author WHERE author_id = $1;', author_id);
+
+const removeCustomer = (customer_id) => db.none('DELETE FROM customer WHERE customer_id = $1', customer_id);
 
 // Exports
 module.exports = {
@@ -182,6 +173,7 @@ module.exports = {
   getTitle,
   getSellers,
   getVendor,
+  getCustomers,
   getCustomer,
   checkValidCustomer,
   checkValidAdmin,
@@ -198,5 +190,6 @@ module.exports = {
   addAuthor,
   removeAuthor,
   addBook,
-  removeBook
+  removeBook,
+  removeCustomer
 }

@@ -4,8 +4,10 @@ block content
   if user.name
     h1 #{user.name}'s Profile
   else 
-    h1 #{user.customer_id}'s Profile
+    h1 #{user.username}'s Profile
   ul
+    if user.name
+      li= 'username: ' + user.username
     li= 'customer_id: ' + user.customer_id
     li= 'email: ' + user.email
     li= 'address: ' + user.address

@@ -7,3 +7,5 @@ block content
     li: a(href='/titles' + loginInfo) Titles
     li: a(href='/vendors' + loginInfo) Vendors
     li: a(href='/authors' + loginInfo) Authors
+    if admin
+      li: a(href='/customers' + loginInfo) Customers

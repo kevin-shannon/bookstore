@@ -23,6 +23,8 @@ app.use((req, res, next) => {
     db.getUserFromId(req.query.id, res.locals.admin).then((username) => {
       res.locals.username = username.username;
       next();
+    }).catch(() => {
+      next();
     });
   } else {
     next();
@@ -50,7 +52,7 @@ app.get('/login', (req, res) => {
       })
     })
     .catch(() => {
-      res.redirect(req.path);
+      res.redirect(req.path)
     })
   }
 })
@@ -134,6 +136,14 @@ app.get('/profile/:customer_id', (req, res) => {
   })
 })
 
+app.get('/customers', (req, res) => {
+  db.getCustomers().then((customers) => {
+    res.render('customers', {
+      customers
+    })
+  })
+})
+
 // Post Requests
 app.post('/cart/add', (req, res) => {
   db.addToCart(req.body.book_id, req.body.customer_id).then(() => {
@@ -210,7 +220,13 @@ app.post('/books/remove', (req, res) => {
   })
 })
 
+app.post('/customers/remove', (req, res) => {
+  db.removeCustomer(req.body.customer_id).then(() => {
+    res.redirect('/customers' + req.body.loginInfo);
+  })
+})
+
 // Start Server
 app.listen(port, () => {
-  console.log(`Bookstore app listening at http://localhost:${port}`)
+  console.log(`Bookstore app listening at http://localhost:${port}`);
 })

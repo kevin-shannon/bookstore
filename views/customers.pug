@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  h1 Customers
+  table.pure-table.pure-table-bordered
+    tr
+      th username
+      th name
+      th email
+      th phone_number
+      if admin
+        th
+    each customer, i in customers
+      tr
+        td: a(href='/profile/' + customer.customer_id) #{customer.username}
+        td= customer.name
+        td: a(href=customer.email) #{customer.email}
+        td= customer.address
+        if id && admin
+          td
+            form(action='/customers/remove' method='POST')
+              input(type='hidden' name='customer_id' value=customer.customer_id)
+              input(type='hidden' name='loginInfo' value=loginInfo)
+              button Remove

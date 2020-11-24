@@ -3,12 +3,13 @@ extends layout
 block content
   h1 My Cart
   h3 Items in Cart: #{numItems.count}
-  table
+  table.pure-table.pure-table-bordered
     tr
       th book_id
       th title
       th price
       th vendor
+      th
     each item, i in cart
       tr
         td= item.book_id

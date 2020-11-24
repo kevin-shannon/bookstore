@@ -12,13 +12,15 @@ block content
       li= 'author_list: ' + title.author_list
   
   h3 Sellers
-  table
+  table.pure-table.pure-table-bordered
     tr
       th book_id
       th condition
       th published_by
       th vendor
       th price
+      if admin
+        th
     each seller, i in sellers
       tr
         td= seller.book_id

@@ -10,12 +10,15 @@ block content
       input(type='text' name='address' placeholder='address')
       input(type='hidden' name='loginInfo' value=loginInfo)
       input(type='submit' value='Add')
-  table
+    br
+  table.pure-table.pure-table-bordered
     tr
       th vendor_id
       th name
       th url
       th address
+      if admin
+        th
     each vendor, i in vendors
       tr
         td= vendor.vendor_id

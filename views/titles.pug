@@ -13,13 +13,16 @@ block content
       input(type='text' name='author_list' placeholder='author_id list')
       input(type='hidden' name='loginInfo' value=loginInfo)
       input(type='submit' value='Add')
-  table
+    br
+  table.pure-table.pure-table-bordered
     tr
       th Title
       th Genres
       th Authors
       th Rating
       th Price
+      if admin
+        th
       
     each title, i in titles
       tr

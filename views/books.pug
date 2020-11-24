@@ -13,7 +13,8 @@ block content
       input(type='hidden' name='admin_id', value=id)
       input(type='hidden' name='loginInfo' value=loginInfo)
       input(type='submit' value='Add')
-  table
+    br
+  table.pure-table.pure-table-bordered
     tr
       th book_id
       th name
@@ -21,6 +22,8 @@ block content
       th vendor_name
       th author_list
       th published_by
+      if admin
+        th
     each book, i in books
       tr
         td= book.book_id

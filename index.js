@@ -61,10 +61,12 @@ app.get('/register', (req, res) => {
   res.render('register')
 })
 
-app.get('/books', (req, res) => {
-  db.getAllBooks().then((books) => {
+app.get('/books/:page', (req, res) => {
+  page = req.params.page;
+  db.getAllBooks(page).then((books) => {
     res.render('books', {
-      books
+      books,
+      page
     })
   });
 })

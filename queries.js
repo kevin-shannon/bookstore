@@ -3,11 +3,12 @@ var pgp = require('pg-promise')({});
 const cn = 'postgres://postgres:412@localhost:5432/bookstore';
 const db = pgp(cn);
 
+const limit = 7;
 const userify = ({id, password, admin}) => (id && password) ? `?id=${id}&password=${password}&admin=${admin}` : '';
 
 // Query functions
 
-const getAllBooks = () => db.any("SELECT book_id, name, book_preview.isbn, vendor_name, author_list, published_by \
+const getAllBooks = (page) => db.any("SELECT book_id, name, book_preview.isbn, vendor_name, author_list, published_by \
   FROM (SELECT book_id, title.name, book.isbn, vendor.name AS vendor_name, admin.username AS published_by \
         FROM book, title, vendor, admin \
         WHERE book.isbn = title.isbn AND book.admin_id = admin.admin_id AND book.vendor_id = vendor.vendor_id) AS book_preview \
@@ -15,9 +16,10 @@ const getAllBooks = () => db.any("SELECT book_id, name, book_preview.isbn, vendo
              FROM (SELECT isbn, name \
                    FROM written_by, author \
                    WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS agg_written_by \
-  ON book_preview.isbn = agg_written_by.isbn;");
+  ON book_preview.isbn = agg_written_by.isbn \
+  LIMIT $1 OFFSET $2;", [limit, limit*(page-1)]);
 
-const getAvailableTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
+const getAvailableTitles = (page) => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, title_agg.isbn, genre_list \
         FROM (SELECT isbn, STRING_AGG(type, ', ') AS genre_list FROM categorized_by GROUP BY isbn) AS genre_agg, \
              (SELECT name, rating, MIN(price) AS price, title.isbn FROM title, book WHERE title.isbn = book.isbn AND book.customer_id is null GROUP BY title.isbn) AS title_agg \
@@ -26,7 +28,8 @@ const getAvailableTitles = () => db.any("SELECT name, rating, price, title_agg.i
              FROM (SELECT isbn, name \
                    FROM written_by, author \
                    WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS written_by_agg \
-  ON title_agg.isbn = written_by_agg.isbn;");
+  ON title_agg.isbn = written_by_agg.isbn \
+  LIMIT $1 OFFSET $2;", [limit, limit*(page-1)]);
 
 const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, title_agg.isbn, genre_list \

@@ -28,6 +28,14 @@ html
       a(href='/register') Register
       
     block content
+    
+    if page
+      br
+      if page > 1
+      a(href=path + `/../${parseInt(page)-1}` + loginInfo) < 
+      a Page #{page} 
+      a(href=path + `/../${parseInt(page)+1}` + loginInfo) >
+    
     br
     hr
     footer

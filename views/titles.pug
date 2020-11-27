@@ -26,7 +26,7 @@ block content
       
     each title, i in titles
       tr
-        td: a(href='/titles/' + title.isbn + loginInfo) #{title.name}
+        td: a(href='/title/' + title.isbn + loginInfo) #{title.name}
         td= title.genre_list
         td= title.author_list
         td= title.rating

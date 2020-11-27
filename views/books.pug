@@ -27,7 +27,7 @@ block content
     each book, i in books
       tr
         td= book.book_id
-        td: a(href='/titles/' + book.isbn + loginInfo) #{book.name}
+        td: a(href='/title/' + book.isbn + loginInfo) #{book.name}
         td= book.isbn
         td= book.vendor_name
         td= book.author_list

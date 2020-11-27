@@ -32,9 +32,10 @@ html
     if page
       br
       if page > 1
-      a(href=path + `/../${parseInt(page)-1}` + loginInfo) < 
-      a Page #{page} 
-      a(href=path + `/../${parseInt(page)+1}` + loginInfo) >
+        a(href=path + `/../${parseInt(page)-1}` + loginInfo) « 
+      a  Page #{page} of #{maxPage} 
+      if page < maxPage
+        a(href=path + `/../${parseInt(page)+1}` + loginInfo) »
     
     br
     hr

@@ -3,7 +3,7 @@ var pgp = require('pg-promise')({});
 const cn = 'postgres://postgres:412@localhost:5432/bookstore';
 const db = pgp(cn);
 
-const limit = 7;
+const limit = 6;
 const userify = ({id, password, admin}) => (id && password) ? `?id=${id}&password=${password}&admin=${admin}` : '';
 
 // Query functions
@@ -19,6 +19,8 @@ const getAllBooks = (page) => db.any("SELECT book_id, name, book_preview.isbn, v
   ON book_preview.isbn = agg_written_by.isbn \
   LIMIT $1 OFFSET $2;", [limit, limit*(page-1)]);
 
+const getNumBookPages = () => db.one("SELECT COUNT(*) FROM book").then((count) => Math.ceil(count.count / limit))
+
 const getAvailableTitles = (page) => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, title_agg.isbn, genre_list \
         FROM (SELECT isbn, STRING_AGG(type, ', ') AS genre_list FROM categorized_by GROUP BY isbn) AS genre_agg, \
@@ -31,7 +33,9 @@ const getAvailableTitles = (page) => db.any("SELECT name, rating, price, title_a
   ON title_agg.isbn = written_by_agg.isbn \
   LIMIT $1 OFFSET $2;", [limit, limit*(page-1)]);
 
-const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
+const getNumAvailTitlePages = () => db.one("SELECT COUNT(*) FROM (SELECT title.isbn FROM title, book WHERE title.isbn = book.isbn AND book.customer_id is null GROUP BY title.isbn) AS title_agg;").then((count) => Math.ceil(count.count / limit));
+
+const getAllTitles = (page) => db.any("SELECT name, rating, price, title_agg.isbn, genre_list, author_list \
   FROM (SELECT name, rating, price, title_agg.isbn, genre_list \
         FROM (SELECT isbn, STRING_AGG(type, ', ') AS genre_list FROM categorized_by GROUP BY isbn) AS genre_agg, \
              (SELECT name, rating, MIN(price) AS price, title.isbn FROM title LEFT JOIN book ON title.isbn = book.isbn GROUP BY title.isbn) AS title_agg \
@@ -40,7 +44,10 @@ const getAllTitles = () => db.any("SELECT name, rating, price, title_agg.isbn, g
              FROM (SELECT isbn, name \
                    FROM written_by, author \
                    WHERE written_by.author_id = author.author_id) AS by_name GROUP BY isbn) AS written_by_agg \
-  ON title_agg.isbn = written_by_agg.isbn;");
+  ON title_agg.isbn = written_by_agg.isbn \
+  LIMIT $1 OFFSET $2;", [limit, limit*(page-1)]);
+
+const getNumAllTitlePages = () => db.one("SELECT COUNT(*) FROM title").then((count) => Math.ceil(count.count / limit));
 
 const getAllVendors = () => db.any('SELECT * FROM vendor');
 
@@ -166,8 +173,11 @@ const removeCustomer = (customer_id) => db.none('DELETE FROM customer WHERE cust
 module.exports = {
   userify,
   getAllBooks,
+  getNumBookPages,
   getAvailableTitles,
+  getNumAvailTitlePages,
   getAllTitles,
+  getNumAllTitlePages,
   getAllVendors,
   getAllAuthors,
   getCart,

@@ -19,7 +19,7 @@ block content
       th published_by
       th vendor
       th price
-      if admin
+      if !admin && id
         th
     each seller, i in sellers
       tr

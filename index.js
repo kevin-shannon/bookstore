@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use((req, res, next) => {
   res.locals.id = req.query.id;
+  res.locals.page = ''
   res.locals.path = req.path;
   res.locals.loginInfo = db.userify(req.query);
   res.locals.admin = parseInt(req.query.admin);
@@ -62,22 +63,35 @@ app.get('/register', (req, res) => {
 })
 
 app.get('/books/:page', (req, res) => {
-  page = req.params.page;
-  db.getAllBooks(page).then((books) => {
+  const page = req.params.page;
+
+  const c = db.getAllBooks(page);
+  const n = db.getNumBookPages();
+
+  Promise.all([c,n]).then(([books, maxPage]) => {
     res.render('books', {
       books,
-      page
+      page,
+      maxPage
     })
-  });
+  })
 })
 
-app.get('/titles', (req, res) => {
-  const choose = () => parseInt(req.query.admin) ? db.getAllTitles() : db.getAvailableTitles();
-  choose().then((titles) => {
+app.get('/titles/:page', (req, res) => {
+  const page = req.params.page;
+  const chooseTable = () => parseInt(req.query.admin) ? db.getAllTitles(page) : db.getAvailableTitles(page);
+  const choosePages = () => parseInt(req.query.admin) ? db.getNumAllTitlePages() : db.getNumAvailTitlePages();
+
+  const t = chooseTable();
+  const p = choosePages();
+
+  Promise.all([t,p]).then(([titles, maxPage]) => {
     res.render('titles', {
-      titles
+      titles,
+      page,
+      maxPage
     })
-  });
+  })
 })
 
 app.get('/vendors', (req, res) => {
@@ -96,9 +110,9 @@ app.get('/authors', (req, res) => {
   });
 })
 
-app.get('/titles/:isbn', (req, res) => {
-  let t = db.getTitle(req.params.isbn)
-  let s = db.getSellers(req.params.isbn)
+app.get('/title/:isbn', (req, res) => {
+  const t = db.getTitle(req.params.isbn)
+  const s = db.getSellers(req.params.isbn)
 
   Promise.all([t,s]).then(([title,sellers]) => {
     res.render('title', {
@@ -117,9 +131,9 @@ app.get('/vendors/:vendor_id', (req, res) => {
 })
 
 app.get('/cart', (req, res) => {
-  let c = db.getCart(req.query.id)
-  let n = db.getNumItems(req.query.id)
-  let p = db.getTotalPrice(req.query.id)
+  const c = db.getCart(req.query.id)
+  const n = db.getNumItems(req.query.id)
+  const p = db.getTotalPrice(req.query.id)
 
   Promise.all([c,n,p]).then(([cart, numItems, totalPrice]) => {
     res.render('cart', {
@@ -207,18 +221,20 @@ app.post('/authors/remove', (req, res) => {
 })
 
 app.post('/books/add', (req, res) => {
+  console.log(req.originalUrl);
   db.checkValidBook(req.body).then(() =>{
     db.addBook(req.body).then(() => {
-      res.redirect('/books' + req.body.loginInfo);
+      res.redirect('/books/1' + req.body.loginInfo);
     })
   }).catch(() => {
-    res.redirect('/books' + req.body.loginInfo);
+    res.redirect('/books/1' + req.body.loginInfo);
   })
 })
 
 app.post('/books/remove', (req, res) => {
+  console.log(req.originalUrl);
   db.removeBook(req.body.book_id).then(() => {
-    res.redirect('/books' + req.body.loginInfo);
+    res.redirect('/books/1' + req.body.loginInfo);
   })
 })
 

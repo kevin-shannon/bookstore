@@ -49,9 +49,13 @@ const getAllTitles = (page) => db.any("SELECT name, rating, price, title_agg.isb
 
 const getNumAllTitlePages = () => db.one("SELECT COUNT(*) FROM title").then((count) => Math.ceil(count.count / limit));
 
-const getAllVendors = () => db.any('SELECT * FROM vendor');
+const getAllVendors = (page) => db.any('SELECT * FROM vendor LIMIT $1 OFFSET $2;', [limit, limit*(page-1)]);
 
-const getAllAuthors = () => db.any('SELECT * FROM author');
+const getNumVendorPages = () => db.one('SELECT COUNT(*) FROM vendor').then((count) => Math.ceil(count.count / limit));
+
+const getAllAuthors = (page) => db.any('SELECT * FROM author LIMIT $1 OFFSET $2', [limit, limit*(page-1)]);
+
+const getNumAuthorPages = () => db.one('SELECT COUNT(*) FROM author').then((count) => Math.ceil(count.count / limit));
 
 const getCart = (customer_id) => db.any('SELECT book_id, title.name, price, book.vendor_id, vendor.name AS vendor \
   FROM book, vendor, title \
@@ -82,7 +86,9 @@ const getSellers = (isbn) => db.any('SELECT book_id, condition, admin.username A
 
 const getVendor = (vendor_id) => db.one('SELECT * FROM vendor WHERE vendor_id = $1;', vendor_id);
 
-const getCustomers = () => db.any('SELECT username, name, address, email, customer_id FROM customer;');
+const getCustomers = (page) => db.any('SELECT username, name, address, email, customer_id FROM customer LIMIT $1 OFFSET $2', [limit, limit*(page-1)]);
+
+const getNumCustomerPages = () => db.one('SELECT COUNT(*) FROM customer').then((count) => Math.ceil(count.count / limit));
 
 const getCustomer = (customer_id) => db.one('SELECT * FROM customer WHERE customer_id = $1;', customer_id);
 
@@ -179,7 +185,9 @@ module.exports = {
   getAllTitles,
   getNumAllTitlePages,
   getAllVendors,
+  getNumVendorPages,
   getAllAuthors,
+  getNumAuthorPages,
   getCart,
   getNumItems,
   getTotalPrice,
@@ -187,6 +195,7 @@ module.exports = {
   getSellers,
   getVendor,
   getCustomers,
+  getNumCustomerPages,
   getCustomer,
   checkValidCustomer,
   checkValidAdmin,

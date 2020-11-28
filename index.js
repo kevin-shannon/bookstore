@@ -64,11 +64,10 @@ app.get('/register', (req, res) => {
 
 app.get('/books/:page', (req, res) => {
   const page = req.params.page;
-
-  const c = db.getAllBooks(page);
+  const b = db.getAllBooks(page);
   const n = db.getNumBookPages();
 
-  Promise.all([c,n]).then(([books, maxPage]) => {
+  Promise.all([b,n]).then(([books, maxPage]) => {
     res.render('books', {
       books,
       page,
@@ -81,11 +80,10 @@ app.get('/titles/:page', (req, res) => {
   const page = req.params.page;
   const chooseTable = () => parseInt(req.query.admin) ? db.getAllTitles(page) : db.getAvailableTitles(page);
   const choosePages = () => parseInt(req.query.admin) ? db.getNumAllTitlePages() : db.getNumAvailTitlePages();
-
   const t = chooseTable();
-  const p = choosePages();
+  const n = choosePages();
 
-  Promise.all([t,p]).then(([titles, maxPage]) => {
+  Promise.all([t,n]).then(([titles, maxPage]) => {
     res.render('titles', {
       titles,
       page,
@@ -94,20 +92,32 @@ app.get('/titles/:page', (req, res) => {
   })
 })
 
-app.get('/vendors', (req, res) => {
-  db.getAllVendors().then((vendors) => {
+app.get('/vendors/:page', (req, res) => {
+  const page = req.params.page;
+  const v = db.getAllVendors(page);
+  const n = db.getNumVendorPages();
+
+  Promise.all([v,n]).then(([vendors, maxPage]) => {
     res.render('vendors', {
-      vendors
+      vendors,
+      page,
+      maxPage
     })
-  });
+  })
 })
 
-app.get('/authors', (req, res) => {
-  db.getAllAuthors().then((authors) => {
+app.get('/authors/:page', (req, res) => {
+  const page = req.params.page;
+  const a = db.getAllAuthors(page);
+  const n = db.getNumAuthorPages();
+
+  Promise.all([a,n]).then(([authors, maxPage]) => {
     res.render('authors', {
-      authors
+      authors,
+      page,
+      maxPage
     })
-  });
+  })
 })
 
 app.get('/title/:isbn', (req, res) => {
@@ -122,7 +132,7 @@ app.get('/title/:isbn', (req, res) => {
   })
 })
 
-app.get('/vendors/:vendor_id', (req, res) => {
+app.get('/vendor/:vendor_id', (req, res) => {
   db.getVendor(req.params.vendor_id).then((vendor) => {
     res.render('vendor', {
       vendor
@@ -152,10 +162,16 @@ app.get('/profile/:customer_id', (req, res) => {
   })
 })
 
-app.get('/customers', (req, res) => {
-  db.getCustomers().then((customers) => {
+app.get('/customers/:page', (req, res) => {
+  const page = req.params.page;
+  const c = db.getCustomers(page);
+  const n = db.getNumCustomerPages();
+
+  Promise.all([c,n]).then(([customers, maxPage]) => {
     res.render('customers', {
-      customers
+      customers,
+      page,
+      maxPage
     })
   })
 })
@@ -198,25 +214,25 @@ app.post('/titles/remove', (req, res) => {
 
 app.post('/vendors/add', (req, res) => {
   db.addVendor(req.body).then(() => {
-    res.redirect('/vendors' + req.body.loginInfo);
+    res.redirect('/vendors/1' + req.body.loginInfo);
   })
 })
 
 app.post('/vendors/remove', (req, res) => {
   db.removeVendor(req.body.vendor_id).then(() => {
-    res.redirect('/vendors' + req.body.loginInfo);
+    res.redirect('/vendors/1' + req.body.loginInfo);
   })
 })
 
 app.post('/authors/add', (req, res) => {
   db.addAuthor(req.body).then(() => {
-    res.redirect('/authors' + req.body.loginInfo);
+    res.redirect('/authors/1' + req.body.loginInfo);
   })
 })
 
 app.post('/authors/remove', (req, res) => {
   db.removeAuthor(req.body.author_id).then(() => {
-    res.redirect('/authors' + req.body.loginInfo);
+    res.redirect('/authors/1' + req.body.loginInfo);
   })
 })
 
@@ -240,7 +256,7 @@ app.post('/books/remove', (req, res) => {
 
 app.post('/customers/remove', (req, res) => {
   db.removeCustomer(req.body.customer_id).then(() => {
-    res.redirect('/customers' + req.body.loginInfo);
+    res.redirect('/customers/1' + req.body.loginInfo);
   })
 })
 

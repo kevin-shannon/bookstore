@@ -15,7 +15,7 @@ block content
         td= item.book_id
         td= item.name
         td= item.price
-        td: a(href='/vendors/'+item.vendor_id + loginInfo) #{item.vendor}
+        td: a(href='/vendor/'+item.vendor_id + loginInfo) #{item.vendor}
         td
           form(action='/cart/remove' method='POST')
             input(type='hidden' name='book_id' value=item.book_id)

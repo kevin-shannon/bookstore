@@ -10,7 +10,7 @@ To get this tool running on your own machine there are couple steps you'll need 
 
 ### Clone
 ```
-git clone git@github.com:kevin-shannon/bookstore.git
+git clone https://github.com/kevin-shannon/bookstore.git
 cd bookstore/
 ```
 
@@ -23,7 +23,7 @@ Make sure you have [postgresql](https://www.postgresql.org/download/) installed 
 
 We will be using a user with `username: postgres` and `password: 412` make sure your's is set up the same.
 
-Create the database
+From psql create the database
 ```
 createdb bookstore
 ```
